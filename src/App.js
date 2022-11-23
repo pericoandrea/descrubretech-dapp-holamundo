@@ -64,6 +64,10 @@ function App() {
 
             setAddress(await signer.getAddress());
 
+            // Firmar un mensaje
+            const sign = await signer.signMessage("DescubreTech Web 3.0");
+            console.log(sign);
+
             set();
           } else {
             alert("¡Obtenga la extensión de MetaMask para su navegador!");
@@ -74,6 +78,17 @@ function App() {
       </button>
       {address === "" ? "" : <h2>Billetera: {address} </h2>}
       {name === "" ? "" : <h2>Nombre Contrato: {name} </h2>}
+      <button
+        onClick={async () => {
+          const signer = provider.getSigner();
+
+          // Firmar un mensaje
+          const sign = await signer.signMessage("DescubreTech Web 3.0");
+          console.log(sign);
+        }}
+      >
+        Firmar un mensaje
+      </button>
     </div>
   );
 }
