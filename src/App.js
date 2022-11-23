@@ -1,7 +1,10 @@
 import "./App.css";
+import React, { useState } from "react";
 import { ethers } from "ethers";
 
 function App() {
+  const [address, setAddress] = useState("");
+
   return (
     <div className="App">
       <h1>Conectar con la billetera</h1>
@@ -15,17 +18,23 @@ function App() {
 
             // MetaMask requires requesting permission to connect users accounts
             await provider.send("eth_requestAccounts", []);
-
+            console.log(provider);
+            
             // The MetaMask plugin also allows signing transactions to
             // send ether and pay to change state within the blockchain.
             // For this, you need the account signer...
             const signer = provider.getSigner();
-            console.log(provider, await signer.getAddress());
+
+            const addr = await signer.getAddress();
+            setAddress(addr);
+          } else {
+            alert("¡Obtenga la extensión de MetaMask para su navegador!");
           }
         }}
       >
         MetaMask
       </button>
+      {address === ""? "" : <h2>Dirección de la billetera: {address} </h2>}
     </div>
   );
 }
