@@ -6,33 +6,109 @@ function App() {
   const [address, setAddress] = useState("");
   const [provider, setProvider] = useState();
   const [name, setName] = useState("");
+  const [message, setMessage] = useState("");
+  const [allSaludos, setAllSaludos] = useState([]);
 
-  async function set() {
-    const contractAddress = "0x0DC7c9547756602218f96AB820c49E30cB3b97eB";
+    const contractAddress = "0x277CE0518B0e87Dc3D23D34fFA2BE1e1d973af01";
     const contractAbi = [
       {
-        inputs: [],
-        name: "name",
-        outputs: [
+        "inputs": [
           {
-            internalType: "string",
-            name: "",
-            type: "string",
-          },
+            "internalType": "string",
+            "name": "mensaje",
+            "type": "string"
+          }
         ],
-        stateMutability: "view",
-        type: "function",
+        "name": "crearNuevoSaludo",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
       },
-    ];
+      {
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "saludos",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "mensaje",
+            "type": "string"
+          },
+          {
+            "internalType": "address",
+            "name": "saludador",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "marcaDeTiempo",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ]
+    let daiContract;
 
-    if (provider) {
-      // The Contract object
-      const daiContract = new ethers.Contract(
-        contractAddress,
-        contractAbi,
-        provider
-      );
-      console.log(daiContract);
+    
+    try {
+      const { ethereum } = window;
+  
+      if (ethereum) {
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        const signer = provider.getSigner();
+        daiContract = new ethers.Contract(contractAddress, contractAbi, signer); 
+      } else {
+        console.log("Ethereum object doesn't exist!");
+      }
+    } catch (error) {
+      console.log("ERROR:", error);
+    }
+
+  async function submit () {
+      try {
+        alert ('Enviando transacción...: ' + message);
+        const txn = await daiContract.crearNuevoSaludo(message);
+        await txn.wait();
+        alert ('Se envió un saludo! El saludo:' + message);
+      } catch (e) {
+        alert ('Error: ' + e);
+      }
+  }
+
+  function readAllMessages () {
+    if (daiContract) {
+      const saludos = [];
+      for (let i=0; i < daiContract.saludos.length; i++){
+        saludos.push(daiContract.saludos(i));
+      }
+      setAllSaludos(saludos);
+    } else {
+      alert("Conectese a MetaMask");
+    }
+  }
+
+  async function set() {
+    if (daiContract) {
       const valueName = await daiContract.name();
       setName(valueName);
       console.log(valueName);
@@ -40,6 +116,7 @@ function App() {
       alert("Conectese a MetaMask");
     }
   }
+
 
   return (
     <div className="App">
@@ -89,6 +166,26 @@ function App() {
       >
         Firmar un mensaje
       </button>
+
+      <h1>Crear un nuevo saludo</h1>
+      <form onSubmit={() => submit()}>
+        <label>
+          Saludo:
+          <input type="text" value={message} onChange={(event) => setMessage(event.target.value)} />
+        </label>
+        <input type="submit" value="Submit" />
+      </form>
+
+      <h1>Todos los saludo</h1>
+      { allSaludos.length > 0 && allSaludos.map((saludo, index) => {
+          return <div key={index}>
+            <p>Saludo: {saludo.mensaje}</p>
+            <p>Saludador: {saludo.saludador}</p>
+            <p>Marca de tiempo: {saludo.marcaDeTiempo}</p>
+          </div>
+        }
+      )}
+      <button onClick={()=>readAllMessages()}>Click</button>
     </div>
   );
 }
